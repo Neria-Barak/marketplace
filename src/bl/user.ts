@@ -1,8 +1,13 @@
-import { DBTable } from "../dal/db";
+import { DBCollection } from "../dal/db";
 import { User, userSchema } from "../types/user";
 
 export class UserLogic {
-    private db = new DBTable<User>("user", userSchema);
+    private lastId = 0;
+    private db = new DBCollection<User>("user", userSchema);
+
+    private getNewId() {
+        return ++this.lastId;
+    }
 
     async getUsers() {
         return await this.db.getAll();
@@ -12,14 +17,19 @@ export class UserLogic {
         return await this.db.getEntryById(id);
     }
 
-    async addUser(name: string) {
+    async addUser(userInfo: any) {
         const newUser: User = {
-            name: name,
+            _id: this.getNewId(),
+            name: userInfo.name,
+            creationDate: new Date(),
+            dateOfBirth: userInfo.dateOfBirth,
+            gender: userInfo.gender,
         };
         return await this.db.addEntry(newUser);
     }
 
     async updateUser(id: string, updatedFields: Partial<User>) {
+        updatedFields.lastUpdate = new Date();
         return await this.db.updateById(id, updatedFields);
     }
 

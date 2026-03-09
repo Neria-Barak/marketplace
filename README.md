@@ -4,23 +4,14 @@ users:
 get user with id 'id'
 
 res:
-{
-    _id, name
-}
+User
 
 
 /users/ GET:
 get all users
 
 res:
-[
-    {
-        _id, name
-    },
-    .
-    .
-    .
-]
+User[]
 
 
 /users/ POST:
@@ -28,12 +19,10 @@ add user
 
 req:
 body: {
-    name
+    name, dateOfBirth, gender
 }
 res:
-{
-    _id, name
-}
+User
 
 
 /users/:id PATCH:
@@ -41,18 +30,14 @@ update user with id 'id'
 
 req:
 body: {
-    name
+    name?, dateOfBirth?, gender?
 }
 res:
-{
-    _id, name
-}
+User
 
 
 /users/:id DELETE:
 delete user with id 'id'
 
 res:
-{
-    _id, name
-}
+User

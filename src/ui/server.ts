@@ -1,6 +1,7 @@
 import express from "express";
 import 'dotenv/config';
 import { UserLogic } from "../bl/user";
+import { body, validationResult } from "express-validator";
 
 const port = process.env.API_PORT;
 const baseUrl = process.env.API_BASE_URL;
@@ -14,9 +15,8 @@ const userLogic = new UserLogic();
 
 server.get("/users", async (req, res) => {
     const users = await userLogic.getUsers();
-    if (users === undefined) {
-        res.sendStatus(404);
-        return;
+    if (users === null) {
+        return res.sendStatus(404);
     }
     res.status(200).json(users);
 });
@@ -24,19 +24,28 @@ server.get("/users", async (req, res) => {
 server.get("/users/:id", async (req, res) => {
     const id = req.params.id;
     const user = await userLogic.getUserById(id);
-    if (user === undefined) {
-        res.sendStatus(404);
-        return;
+    if (user === null) {
+        return res.sendStatus(404);
     }
     res.status(200).json(user);
 });
 
-server.post("/users", async (req, res) => {
-    const result = await userLogic.addUser(req.body.name);
+const validateUser = [
+    body("name").isString(),
+    body("dateOfBirth").isISO8601(),
+    body("gender").isIn(["M", "F"]),
+];
 
-    if (result === undefined) {
-        res.sendStatus(500);
-        return;
+server.post("/users", validateUser, async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const result = await userLogic.addUser(req.body);
+
+    if (result === null) {
+        return res.sendStatus(500);
     }
     res.status(201).json(result);
 });
@@ -45,9 +54,8 @@ server.patch("/users/:id", async (req, res) => {
     const id = req.params.id;
     const updatedUser = await userLogic.updateUser(id, req.body);
 
-    if (updatedUser === undefined) {
-        res.sendStatus(404);
-        return;
+    if (updatedUser === null) {
+        return res.sendStatus(404);
     }
     res.status(200).json(updatedUser);
 });
@@ -56,9 +64,8 @@ server.delete("/users/:id", async (req, res) => {
     const id = req.params.id;
     const deletedUser = await userLogic.deleteUser(id);
 
-    if (deletedUser === undefined) {
-        res.sendStatus(404);
-        return;
+    if (deletedUser === null) {
+        return res.sendStatus(404);
     }
     res.status(200).json(deletedUser);
 });
